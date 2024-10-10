@@ -25,15 +25,19 @@ jobs:
       run: |
         az group create --name myResourceGroup --location eastus
 
-    # Step 4: Check if the Web App exists
+    # Step 4: Check if the Web App exists and set an output variable
     - name: 'Check if Web App exists'
       id: check_app
       run: |
-        az webapp show --resource-group myResourceGroup --name myFirstAzureApp || echo "not found"
+        if az webapp show --resource-group myResourceGroup --name myFirstAzureApp; then
+          echo "exists=true" >> $GITHUB_ENV
+        else
+          echo "exists=false" >> $GITHUB_ENV
+        fi
 
     # Step 5: Create the Web App if it doesn't exist
     - name: 'Create Azure Web App'
-      if: steps.check_app.outputs.result == 'not found'
+      if: env.exists == 'false'
       run: |
         az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
 
