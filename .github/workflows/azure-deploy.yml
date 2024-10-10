@@ -13,6 +13,8 @@ jobs:
     # Step 1: Checkout the repository code
     - name: 'Checkout GitHub repository'
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     # Step 2: Login to Azure using the service principal
     - name: 'Login to Azure'
@@ -20,7 +22,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 3: Create the Resource Group (if it doesn't exist)
+    # Step 3: Create Resource Group (if it doesn't exist)
     - name: 'Create Resource Group'
       run: |
         az group create --name myResourceGroup --location eastus
@@ -35,29 +37,17 @@ jobs:
           echo "plan_exists=false" >> $GITHUB_ENV
         fi
 
-    # Step 5: Create the App Service Plan if it doesn’t exist
+    # Step 5: Create App Service Plan if it doesn’t exist
     - name: 'Create App Service Plan'
       if: env.plan_exists == 'false'
       run: |
         az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku B1 --is-linux
 
-    # Step 6: Check if the Web App exists and set an output variable
-    - name: 'Check if Web App exists'
-      id: check_app
-      run: |
-        if az webapp show --resource-group myResourceGroup --name myUniqueAzureApp; then
-          echo "exists=true" >> $GITHUB_ENV
-        else
-          echo "exists=false" >> $GITHUB_ENV
-        fi
+    # Step 6: Create Deployment Package (zip the project)
+    - name: 'Create Deployment Package'
+      run: zip -r my-app.zip .
 
-    # Step 7: Create the Web App if it doesn't exist
-    - name: 'Create Azure Web App'
-      if: env.exists == 'false'
-      run: |
-        az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myUniqueAzureApp --runtime "node|16-lts"
-
-    # Step 8: Deploy static files directly to the Azure Web App
+    # Step 7: Deploy to Azure Web App
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path . --type static
+        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path ./my-app.zip --type static
