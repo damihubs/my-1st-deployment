@@ -15,33 +15,34 @@ jobs:
     - name: 'Checkout GitHub repository'
       uses: actions/checkout@v2
 
-    # Step 2: Set up the Azure CLI
-    - name: 'Set up Azure CLI'
-      uses: azure/CLI@v1
-
-    # Step 3: Login to Azure using the service principal
+    # Step 2: Login to Azure using the service principal
     - name: 'Login to Azure'
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 4: Create Resource Group (if it doesn't exist)
+    # Step 3: Create Resource Group (if it doesn't exist)
     - name: 'Create Resource Group'
       run: |
         az group create --name myResourceGroup --location eastus
 
-    # Step 5: Create App Service Plan (if it doesn't exist)
+    # Step 4: Create App Service Plan (if it doesn't exist)
     - name: 'Create App Service Plan'
       run: |
         az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku FREE
 
-    # Step 6: Create Web App (if it doesn't exist)
+    # Step 5: Create Web App (if it doesn't exist)
     - name: 'Create Azure Web App'
       run: |
         az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
 
-    # Step 7: Deploy the app to Azure using Azure CLI
+    # Step 6: Create a ZIP of your app (if required for deployment)
+    - name: 'Create ZIP file for deployment'
+      run: |
+        zip -r myapp.zip *
+
+    # Step 7: Deploy the app to Azure using the created ZIP
     - name: 'Deploy the app to Azure'
       run: |
-        az webapp deployment source config-zip --resource-group myResourceGroup --name myFirstAzureApp --src-path ./path-to-your-deployable-zip.zip
+        az webapp deployment source config-zip --resource-group myResourceGroup --name myFirstAzureApp --src-path ./myapp.zip
 
