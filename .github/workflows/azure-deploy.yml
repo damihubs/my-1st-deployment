@@ -55,7 +55,7 @@ jobs:
     - name: 'Create Azure Web App'
       if: env.exists == 'false'
       run: |
-        az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myUniqueAzureApp --runtime "node|14-lts"
+        az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myUniqueAzureApp --runtime "node|16-lts"
 
     # Step 8: Deploy static files directly to the Azure Web App
     - name: 'Deploy to Azure Web App'
