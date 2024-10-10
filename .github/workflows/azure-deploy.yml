@@ -30,20 +30,20 @@ jobs:
       id: check_app
       run: |
         az webapp show --resource-group myResourceGroup --name myFirstAzureApp || echo "not found"
-    
+
     # Step 5: Create the Web App only if it doesn't exist
     - name: 'Create Azure Web App'
       if: steps.check_app.outputs.result == 'not found'
       run: |
         az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
 
-    # Step 6: Create a ZIP file of your app for deployment
+    # Step 6: Create a ZIP file for deployment
     - name: 'Create ZIP file for deployment'
       run: |
         zip -r myapp.zip *
 
-    # Step 7: Deploy the ZIP file to Azure
+    # Step 7: Deploy the app using az webapp deploy (new command)
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deployment source config-zip --resource-group myResourceGroup --name myFirstAzureApp --src ./myapp.zip
+        az webapp deploy --resource-group myResourceGroup --name myFirstAzureApp --src-path ./myapp.zip
 
