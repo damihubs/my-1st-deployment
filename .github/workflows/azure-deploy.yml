@@ -25,7 +25,23 @@ jobs:
       run: |
         az group create --name myResourceGroup --location eastus
 
-    # Step 4: Check if the Web App exists and set an output variable
+    # Step 4: Verify the App Service Plan exists
+    - name: 'Check if App Service Plan exists'
+      id: check_plan
+      run: |
+        if az appservice plan show --name myAppServicePlan --resource-group myResourceGroup; then
+          echo "plan_exists=true" >> $GITHUB_ENV
+        else
+          echo "plan_exists=false" >> $GITHUB_ENV
+        fi
+
+    # Step 5: Create the App Service Plan if it doesn’t exist
+    - name: 'Create App Service Plan'
+      if: env.plan_exists == 'false'
+      run: |
+        az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku B1 --is-linux
+
+    # Step 6: Check if the Web App exists and set an output variable
     - name: 'Check if Web App exists'
       id: check_app
       run: |
@@ -35,13 +51,13 @@ jobs:
           echo "exists=false" >> $GITHUB_ENV
         fi
 
-    # Step 5: Create the Web App if it doesn't exist
+    # Step 7: Create the Web App if it doesn't exist
     - name: 'Create Azure Web App'
       if: env.exists == 'false'
       run: |
         az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
 
-    # Step 6: Deploy static files directly to the Azure Web App
+    # Step 8: Deploy static files directly to the Azure Web App
     - name: 'Deploy to Azure Web App'
       run: |
         az webapp deploy --resource-group myResourceGroup --name myFirstAzureApp --src-path .
