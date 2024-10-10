@@ -1,6 +1,5 @@
 name: Azure Web App Deployment
 
-# Trigger this workflow on push to the main branch
 on:
   push:
     branches:
@@ -11,37 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository code
     - name: 'Checkout GitHub repository'
       uses: actions/checkout@v2
 
-    # Step 2: Login to Azure using the service principal
     - name: 'Login to Azure'
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 3: Create Resource Group (if it doesn't exist)
-    - name: 'Create Resource Group'
+    # Step 1: Check if Web App exists
+    - name: 'Check if Web App exists'
+      id: check_app
       run: |
-        az group create --name myResourceGroup --location eastus
-
-    # Step 4: Create App Service Plan (if it doesn't exist)
-    - name: 'Create App Service Plan'
-      run: |
-        az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku FREE
-
-    # Step 5: Create Web App (if it doesn't exist)
+        az webapp show --resource-group myResourceGroup --name myFirstAzureApp || echo "not found"
+    
+    # Step 2: Create Web App only if it doesn't exist
     - name: 'Create Azure Web App'
+      if: steps.check_app.outputs.result == 'not found'
       run: |
         az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
 
-    # Step 6: Create a ZIP of your app (if required for deployment)
-    - name: 'Create ZIP file for deployment'
-      run: |
-        zip -r myapp.zip *
-
-    # Step 7: Deploy the app to Azure using the created ZIP
+    # Step 3: Deploy the app using Azure CLI
     - name: 'Deploy the app to Azure'
       run: |
         az webapp deployment source config-zip --resource-group myResourceGroup --name myFirstAzureApp --src-path ./myapp.zip
