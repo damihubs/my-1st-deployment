@@ -22,28 +22,16 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 3: Create Resource Group (if it doesn't exist)
+    # Step 3: Create the Resource Group (if it doesn't exist)
     - name: 'Create Resource Group'
       run: |
         az group create --name myResourceGroup --location eastus
 
-    # Step 4: Verify the App Service Plan exists
-    - name: 'Check if App Service Plan exists'
-      id: check_plan
-      run: |
-        if az appservice plan show --name myAppServicePlan --resource-group myResourceGroup; then
-          echo "plan_exists=true" >> $GITHUB_ENV
-        else
-          echo "plan_exists=false" >> $GITHUB_ENV
-        fi
+    # Step 4: Create Deployment Package (zip the project)
+    - name: 'Create Deployment Package'
+      run: zip -r my-app.zip .
 
-    # Step 5: Create App Service Plan if it doesn’t exist
-    - name: 'Create App Service Plan'
-      if: env.plan_exists == 'false'
-      run: |
-        az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku B1 --is-linux
-
-    # Step 6: Deploy to Azure Web App using Service Principal
+    # Step 5: Deploy to Azure Web App using the zip package
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path . --type static
+        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path ./my-app.zip --type static
