@@ -45,7 +45,7 @@ jobs:
     - name: 'Check if Web App exists'
       id: check_app
       run: |
-        if az webapp show --resource-group myResourceGroup --name myFirstAzureApp; then
+        if az webapp show --resource-group myResourceGroup --name myUniqueAzureApp; then
           echo "exists=true" >> $GITHUB_ENV
         else
           echo "exists=false" >> $GITHUB_ENV
@@ -55,9 +55,9 @@ jobs:
     - name: 'Create Azure Web App'
       if: env.exists == 'false'
       run: |
-        az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myFirstAzureApp --runtime "node|14-lts"
+        az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name myUniqueAzureApp --runtime "node|14-lts"
 
     # Step 8: Deploy static files directly to the Azure Web App
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myFirstAzureApp --src-path .
+        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path .
