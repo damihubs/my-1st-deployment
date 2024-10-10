@@ -1,4 +1,4 @@
-name: Azure Web App Deployment
+name: Azure Infrastructure Setup
 
 on:
   push:
@@ -6,15 +6,13 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  setup-infrastructure:
     runs-on: ubuntu-latest
 
     steps:
     # Step 1: Checkout the repository code
     - name: 'Checkout GitHub repository'
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
     # Step 2: Login to Azure using the service principal
     - name: 'Login to Azure'
@@ -22,16 +20,17 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 3: Create the Resource Group (if it doesn't exist)
+    # Step 3: Create the Resource Group
     - name: 'Create Resource Group'
       run: |
         az group create --name myResourceGroup --location eastus
 
-    # Step 4: Create Deployment Package (zip the project)
-    - name: 'Create Deployment Package'
-      run: zip -r my-app.zip .
-
-    # Step 5: Deploy to Azure Web App using the zip package
-    - name: 'Deploy to Azure Web App'
+    # Step 4: Create a Virtual Network (VNet)
+    - name: 'Create Virtual Network'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path ./my-app.zip --type static
+        az network vnet create \
+          --resource-group myResourceGroup \
+          --name myVNet \
+          --address-prefix 10.0.0.0/16 \
+          --subnet-name mySubnet \
+          --subnet-prefix 10.0.1.0/24
