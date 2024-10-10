@@ -60,4 +60,4 @@ jobs:
     # Step 8: Deploy static files directly to the Azure Web App
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path .
+        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path . --type static
