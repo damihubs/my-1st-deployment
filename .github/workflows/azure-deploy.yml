@@ -43,11 +43,7 @@ jobs:
       run: |
         az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku B1 --is-linux
 
-    # Step 6: Create Deployment Package (zip the project)
-    - name: 'Create Deployment Package'
-      run: zip -r my-app.zip .
-
-    # Step 7: Deploy to Azure Web App
+    # Step 6: Deploy to Azure Web App using Service Principal
     - name: 'Deploy to Azure Web App'
       run: |
-        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path ./my-app.zip --type static
+        az webapp deploy --resource-group myResourceGroup --name myUniqueAzureApp --src-path . --type static
